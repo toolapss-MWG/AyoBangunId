@@ -1,10 +1,56 @@
-js
+import { get } from "../firebase.js";
+import { ref } from "../firebase.js";
+import { enumerateDays, formatDateISO, openWA } from "../utils.js";
 
-import { get } from "../firebase.js"; import { ref } from "../firebase.js"; import { enumerateDays, formatDateISO, openWA } from "../utils.js";  import { normalizeWaNumber } from "../utils.js";  const ATT = { hadir:"Hadir", sakit:"Sakit", izin:"Izin", alpha:"Alpha" };  export async function buildAttendanceReportText({ pid, projectMeta, dateList, attendanceObjByUidByDay }){   const totals = { Hadir:0, Sakit:0, Izin:0, Alpha:0 };   const users = Object.keys(attendanceObjByUidByDay || {});   for(const uid of users){     for(const di of dateList){       const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;       if(st && totals[st] != null) totals[st]++;     }   }    let perUser = "";   for(const uid of users){     const name = attendanceObjByUidByDay?.[uid]?.displayName || uid;     *// show last status in range*      let last = "-";     for(let i=dateList.length-1;i>=0;i--){       const di = dateList[i];       const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;       if(st){ last = st; break; }     }     perUser += • ${name}: ${last}\n;   }    const range = ${dateList[0]} s/d ${dateList[dateList.length-1]};   return [     "Laporan Absensi",     Proyek: ${projectMeta?.name || pid},     Periode: ${range},     "",     Rekap:,     - Hadir: ${totals.Hadir},     - Sakit: ${totals.Sakit},     - Izin: ${totals.Izin},     - Alpha: ${totals.Alpha},     "",     "Status per mandor (status terakhir di periode):",     perUser.trim()   ].join("\n"); }  export async function sendAttendanceReportWA({ pid, projectMeta, dateList, waNumber }){    *// attendanceObjByUidByDay[uid][dateISO] = record {status,note,...}*    const attendanceObjByUidByDay = {};    for(const dateISO of dateList){     const snap = await get(ref(null, projects/${pid}/attendance/${dateISO}));   } }  
+import { normalizeWaNumber } from "../utils.js";
 
-> File reportsService di atas aku sengaja **belum aku rapikan final**, karena build laporan perlu akses “db” instance & mapping displayName dari roles.
-> Untuk menghindari salah referensi (karena aku pindah antar file), bagian laporan WA aku selesaikan di views/reportsView.js langsung (lebih aman).
+const ATT = { hadir:"Hadir", sakit:"Sakit", izin:"Izin", alpha:"Alpha" };
 
----
+export async function buildAttendanceReportText({ pid, projectMeta, dateList, attendanceObjByUidByDay }){
+  const totals = { Hadir:0, Sakit:0, Izin:0, Alpha:0 };
+  const users = Object.keys(attendanceObjByUidByDay || {});
+  for(const uid of users){
+    for(const di of dateList){
+      const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;
+      if(st && totals[st] != null) totals[st]++;
+    }
+  }
 
-# 11) Views
+  let perUser = "";
+  for(const uid of users){
+    const name = attendanceObjByUidByDay?.[uid]?.displayName || uid;
+    // show last status in range
+    let last = "-";
+    for(let i=dateList.length-1;i>=0;i--){
+      const di = dateList[i];
+      const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;
+      if(st){ last = st; break; }
+    }
+    perUser += `• ${name}: ${last}\n`;
+  }
+
+  const range = `${dateList[0]} s/d ${dateList[dateList.length-1]}`;
+  return [
+    "Laporan Absensi",
+    `Proyek: ${projectMeta?.name || pid}`,
+    `Periode: ${range}`,
+    "",
+    `Rekap:`,
+    `- Hadir: ${totals.Hadir}`,
+    `- Sakit: ${totals.Sakit}`,
+    `- Izin: ${totals.Izin}`,
+    `- Alpha: ${totals.Alpha}`,
+    "",
+    "Status per mandor (status terakhir di periode):",
+    perUser.trim()
+  ].join("\n");
+}
+
+export async function sendAttendanceReportWA({ pid, projectMeta, dateList, waNumber }){
+  // attendanceObjByUidByDay[uid][dateISO] = record {status,note,...}
+  const attendanceObjByUidByDay = {};
+
+  for(const dateISO of dateList){
+    const snap = await get(ref(null, `projects/${pid}/attendance/${dateISO}`));
+  }
+}
