@@ -1,3 +1,48 @@
-js
+import { db, ref, push, set, get, update, runTransaction } from "../firebase.js";
 
-import { db, ref, push, set, get, update, runTransaction } from "../firebase.js";  export async function createOpname(pid, { dateISO, createdByUid, items, note }){   const opnameRef = push(ref(db, projects/${pid}/materials/opname/${dateISO}));   const opnameId = opnameRef.key;    await set(opnameRef, {     createdBy: createdByUid,     createdAt: new Date().toISOString(),     status: "Pending",     note: note || "",     items: items.map(x=>({       itemId: x.itemId,       variantId: x.variantId,       countedQty: Number(x.countedQty || 0),       unit: x.unit || "",       volume: x.volume ?? null     }))   });    return opnameId; }  export async function verifyOpnameAndSetStock(pid, { dateISO, opnameId, verifiedByUid }){   const opnamePath = projects/${pid}/materials/opname/${dateISO}/${opnameId};   const snap = await get(ref(db, opnamePath));   if(!snap.exists()) throw new Error("Opname tidak ditemukan.");    const opname = snap.val();   if(opname?.status === "Verified") return;    *// set stock to countedQty*    for(const it of opname.items || []){     await runTransaction(       ref(db, projects/${pid}/materials/stock/${it.itemId}/${it.variantId}),       (current)=>{         const cur = current || {};         return { ...cur, quantity: Number(it.countedQty || 0), unit: it.unit || cur.unit || "", volume: it.volume ?? cur.volume ?? null };       }     );   }    await update(ref(db, opnamePath), {     status: "Verified",     verifiedBy: verifiedByUid,     verifiedAt: new Date().toISOString()   }); }
+export async function createOpname(pid, { dateISO, createdByUid, items, note }){
+  const opnameRef = push(ref(db, `projects/${pid}/materials/opname/${dateISO}`));
+  const opnameId = opnameRef.key;
+
+  await set(opnameRef, {
+    createdBy: createdByUid,
+    createdAt: new Date().toISOString(),
+    status: "Pending",
+    note: note || "",
+    items: items.map(x=>({
+      itemId: x.itemId,
+      variantId: x.variantId,
+      countedQty: Number(x.countedQty || 0),
+      unit: x.unit || "",
+      volume: x.volume ?? null
+    }))
+  });
+
+  return opnameId;
+}
+
+export async function verifyOpnameAndSetStock(pid, { dateISO, opnameId, verifiedByUid }){
+  const opnamePath = `projects/${pid}/materials/opname/${dateISO}/${opnameId}`;
+  const snap = await get(ref(db, opnamePath));
+  if(!snap.exists()) throw new Error("Opname tidak ditemukan.");
+
+  const opname = snap.val();
+  if(opname?.status === "Verified") return;
+
+  // set stock to countedQty
+  for(const it of opname.items || []){
+    await runTransaction(
+      ref(db, `projects/${pid}/materials/stock/${it.itemId}/${it.variantId}`),
+      (current)=>{
+        const cur = current || {};
+        return { ...cur, quantity: Number(it.countedQty || 0), unit: it.unit || cur.unit || "", volume: it.volume ?? cur.volume ?? null };
+      }
+    );
+  }
+
+  await update(ref(db, opnamePath), {
+    status: "Verified",
+    verifiedBy: verifiedByUid,
+    verifiedAt: new Date().toISOString()
+  });
+}
