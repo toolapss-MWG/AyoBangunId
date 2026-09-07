@@ -1,8 +1,11 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, auth, db, set, ref } from "../firebase.js";
 import { APP } from "../config.js";
-import { escapeHtml, formatDateISO, toastFactory } from "../utils.js";
+import { escapeHtml, toastFactory } from "../utils.js";
 
-export function renderLogin(root, onAuthed){
+const $ = (id) => document.getElementById(id);
+const usernameToEmail = (u) => `${u}${APP.emailSuffix}`;
+
+export function renderLogin(root){
   root.innerHTML = `
     <div class="container">
       <div class="card" style="padding:16px;">
@@ -11,15 +14,15 @@ export function renderLogin(root, onAuthed){
             <img src="./assets/logo-ayo-bangun.jpeg" alt="logo"/>
             <div class="title">
               <h1>Ayo Bangun.ID Contractor</h1>
-              <p>PWA • Absensi & Laporan WA</p>
+              <p>PWA • Absensi • Material • Progres • WA Report</p>
             </div>
           </div>
         </div>
 
         <div class="section-title">Login</div>
         <div class="small" style="margin-bottom:14px;">
-          Login pakai <b>username</b> (bukan email). Internal untuk aplikasi.<br/>
-          Default DEV: admin/0000 dan owner/${escapeHtml(APP.devSetup.owner.password)}
+          Login pakai <b>username</b> (bukan email). Default DEV:
+          admin/0000 dan owner/${escapeHtml(APP.devSetup.owner.password)}
         </div>
 
         <div class="grid2">
@@ -34,82 +37,60 @@ export function renderLogin(root, onAuthed){
         </div>
 
         <div style="height:12px;"></div>
-        <div class="row">
-          <button class="primary" id="btnLogin" type="button" style="flex:1;">Login</button>
-        </div>
+        <button class="primary" id="btnLogin" type="button" style="width:100%;">Login</button>
 
         <div style="height:14px;"></div>
         <div class="card" style="border-radius:14px; padding:12px; background: rgba(255,255,255,.015); border: 1px dashed rgba(202,162,75,.35);">
-          <div class="section-title" style="margin:0 0 10px 0; font-size:14px;">DEV Setup (opsional)</div>
+          <div class="section-title" style="margin:0 0 10px 0; font-size:14px;">DEV Setup</div>
           <div class="field">
             <label>Setup code</label>
             <input id="inSetupCode" placeholder="AYOBANGUN_SETUP_2026"/>
           </div>
           <div style="height:10px;"></div>
           <button class="ok" id="btnSetup" type="button" style="width:100%;">Buat admin & owner default</button>
-          <div class="small" style="margin-top:8px;">
-            Buat user pertama agar aplikasi bisa login.<br/>
-            Setelah produksi, nonaktifkan ini.
-          </div>
         </div>
       </div>
     </div>
   `;
 
   const toast = toastFactory();
-  const emailSuffix = APP.emailSuffix;
 
-  function usernameToEmail(u){ return `${u}${emailSuffix}`; }
-
-  $("btnLogin").onclick = async ()=>{
+  $("btnLogin").onclick = async () => {
     const username = $("inUsername").value.trim();
     const password = $("inPassword").value;
-    if(!username || !password) return toast("Isi username & password.");
+    if (!username || !password) return toast("Isi username & password.");
 
-    const email = usernameToEmail(username);
-    try{
-      await signInWithEmailAndPassword(auth, email, password);
+    try {
+      await signInWithEmailAndPassword(auth, usernameToEmail(username), password);
       toast("Login berhasil.");
-    }catch(e){
+    } catch (e) {
       console.error(e);
-      toast("Login gagal. cek password/username.");
+      toast("Login gagal.");
     }
   };
 
-  $("btnSetup").onclick = async ()=>{
+  $("btnSetup").onclick = async () => {
     const code = $("inSetupCode").value.trim();
-    if(code !== APP.devSetup.code) return toast("Setup code salah.");
+    if (code !== APP.devSetup.code) return toast("Setup code salah.");
 
-    // Create default users (owner/admin) + set roles
-    const adminEmail = usernameToEmail(APP.devSetup.admin.username);
-    const ownerEmail = usernameToEmail(APP.devSetup.owner.username);
-
-    async function ensure(email, username, role, projectId=null){
+    async function createRoleUser(username, password, role){
       try{
-        const cred = await createUserWithEmailAndPassword(auth, email, arguments[3]);
-      }catch(e){}
-    }
-
-    async function createAndRole({ username, password, role }){
-      try{
-        const email = usernameToEmail(username);
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(username), password);
         await set(ref(db, `roles/${cred.user.uid}`), {
           role,
           username,
           displayName: username,
-          projectId: projectId || null,
+          projectId: null,
           createdAt: new Date().toISOString()
         });
-        toast(`User ${role} dibuat: ${username}`);
+        toast(`${role} dibuat: ${username}`);
       }catch(e){
-        toast(`User ${role} mungkin sudah ada (skip).`);
+        console.warn(e);
+        toast(`${username} mungkin sudah ada.`);
       }
     }
 
-    await createAndRole({ username: APP.devSetup.admin.username, password: APP.devSetup.admin.password, role:"admin" });
-    await createAndRole({ username: APP.devSetup.owner.username, password: APP.devSetup.owner.password, role:"owner" });
-
-    // Make demo project if none exists is handled elsewhere (admin view)
+    await createRoleUser(APP.devSetup.admin.username, APP.devSetup.admin.password, "admin");
+    await createRoleUser(APP.devSetup.owner.username, APP.devSetup.owner.password, "owner");
   };
 }

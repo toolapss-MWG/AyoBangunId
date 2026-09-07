@@ -1,0 +1,1 @@
+export function renderAdminView(root){ root.innerHTML = `<div class="section-title">Admin</div><div class="small">Modul admin akan dirapikan pada langkah berikutnya.</div>`; }

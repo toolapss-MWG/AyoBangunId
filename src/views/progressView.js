@@ -1,0 +1,1 @@
+export function renderProgressView(root){ root.innerHTML = `<div class="section-title">Progres</div><div class="small">Modul progres akan dirapikan pada langkah berikutnya.</div>`; }

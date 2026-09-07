@@ -1,56 +1,52 @@
-import { get } from "../firebase.js";
-import { ref } from "../firebase.js";
-import { enumerateDays, formatDateISO, openWA } from "../utils.js";
+import { db, ref, get } from "../firebase.js";
+import { enumerateDays } from "../utils.js";
 
-import { normalizeWaNumber } from "../utils.js";
-
-const ATT = { hadir:"Hadir", sakit:"Sakit", izin:"Izin", alpha:"Alpha" };
-
-export async function buildAttendanceReportText({ pid, projectMeta, dateList, attendanceObjByUidByDay }){
-  const totals = { Hadir:0, Sakit:0, Izin:0, Alpha:0 };
-  const users = Object.keys(attendanceObjByUidByDay || {});
-  for(const uid of users){
-    for(const di of dateList){
-      const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;
-      if(st && totals[st] != null) totals[st]++;
+export async function fetchAttendanceRange(pid, dateList){
+  const out = {};
+  for(const dateISO of dateList){
+    const snap = await get(ref(db, `projects/${pid}/attendance/${dateISO}`));
+    if(!snap.exists()) continue;
+    const day = snap.val() || {};
+    for(const [uid, rec] of Object.entries(day)){
+      if(!out[uid]) out[uid] = {};
+      out[uid][dateISO] = rec;
     }
   }
+  return out;
+}
 
-  let perUser = "";
-  for(const uid of users){
-    const name = attendanceObjByUidByDay?.[uid]?.displayName || uid;
-    // show last status in range
+export function buildAttendanceReportText({ pid, projectName, dateList, attendanceMap, rolesMap }){
+  const totals = { Hadir:0, Sakit:0, Izin:0, Alpha:0 };
+  const perUser = [];
+  for(const [uid, days] of Object.entries(attendanceMap || {})){
     let last = "-";
-    for(let i=dateList.length-1;i>=0;i--){
-      const di = dateList[i];
-      const st = attendanceObjByUidByDay?.[uid]?.[di]?.status;
-      if(st){ last = st; break; }
+    for(let i = dateList.length - 1; i >= 0; i--){
+      const rec = days[dateList[i]];
+      if(rec?.status){ last = rec.status; break; }
     }
-    perUser += `• ${name}: ${last}\n`;
+    const display = rolesMap?.[uid]?.displayName || rolesMap?.[uid]?.username || uid;
+    perUser.push(`• ${display}: ${last}`);
+    for(const di of dateList){
+      const st = days?.[di]?.status;
+      if(totals[st] != null) totals[st]++;
+    }
   }
 
   const range = `${dateList[0]} s/d ${dateList[dateList.length-1]}`;
   return [
-    "Laporan Absensi",
-    `Proyek: ${projectMeta?.name || pid}`,
+    `Laporan Absensi ${dateList.length === 1 ? "Harian" : dateList.length === 7 ? "Mingguan" : "Bulanan"}`,
+    `Proyek: ${projectName || pid}`,
     `Periode: ${range}`,
     "",
-    `Rekap:`,
+    "Rekap:",
     `- Hadir: ${totals.Hadir}`,
     `- Sakit: ${totals.Sakit}`,
     `- Izin: ${totals.Izin}`,
     `- Alpha: ${totals.Alpha}`,
     "",
-    "Status per mandor (status terakhir di periode):",
-    perUser.trim()
-  ].join("\n");
-}
-
-export async function sendAttendanceReportWA({ pid, projectMeta, dateList, waNumber }){
-  // attendanceObjByUidByDay[uid][dateISO] = record {status,note,...}
-  const attendanceObjByUidByDay = {};
-
-  for(const dateISO of dateList){
-    const snap = await get(ref(null, `projects/${pid}/attendance/${dateISO}`));
-  }
+    "Status per mandor:",
+    perUser.join("
+") || "-",
+  ].join("
+");
 }

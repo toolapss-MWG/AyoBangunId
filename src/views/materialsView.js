@@ -1,0 +1,1 @@
+export function renderMaterialsView(root){ root.innerHTML = `<div class="section-title">Material</div><div class="small">Modul material akan dirapikan pada langkah berikutnya.</div>`; }
