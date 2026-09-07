@@ -1,5 +1,15 @@
-json
-
-{   "name": "Ayo Bangun.ID Contractor",   "short_name": "Ayo Bangun",   "start_url": ".",   "display": "standalone",   "background_color": "#0b1a22",   "theme_color": "#caa24b",   "icons": [     {       "src": "assets/logo-ayo-bangun.jpeg",       "sizes": "512x512",       "type": "image/jpeg"     }   ] } 
-
----
+{
+  "name": "Ayo Bangun.ID Contractor",
+  "short_name": "Ayo Bangun",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1a22",
+  "theme_color": "#caa24b",
+  "icons": [
+    {
+      "src": "assets/logo-ayo-bangun.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
