@@ -1,5 +1,1597 @@
-html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ayo Bangun.ID - POS Contractor</title>
 
-<!DOCTYPE html> <html lang="id"> <head>   <meta charset="UTF-8" />   <meta name="viewport" content="width=device-width,initial-scale=1" />   <title>Ayo Bangun.ID - POS Contractor</title>    <link rel="manifest" href="./manifest.json" />   <link rel="stylesheet" href="./styles.css" />   <meta name="theme-color" content="#0b1a22" /> </head>  <body>   <div id="root"></div>   <div id="toast" class="toast"></div>    <script type="module" src="./src/main.js"></script> </body> </html> 
+  <!-- PWA manifest (inline) -->
+  <script>
+    (function () {
+      const manifest = {
+        name: "Ayo Bangun.ID Contractor",
+        short_name: "Ayo Bangun",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#0b1a22",
+        theme_color: "#caa24b",
+        icons: [
+          {
+            src: "logo-ayo-bangun.jpeg",
+            sizes: "512x512",
+            type: "image/jpeg"
+          }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = url;
+      document.head.appendChild(link);
+    })();
+  </script>
 
----
+  <style>
+    :root{
+      --bg:#07161f;
+      --panel:#0b2430;
+      --panel2:#0e2b3a;
+      --text:#e9f2f7;
+      --muted:#9bb2bf;
+      --gold:#caa24b;
+      --danger:#ff6b6b;
+      --ok:#35d07f;
+      --border: rgba(202,162,75,.35);
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+      --radius:16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background: radial-gradient(1000px 500px at 20% 0%, rgba(202,162,75,.12), transparent 50%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(53,208,127,.08), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+    a{ color: var(--gold); text-decoration:none; }
+    .container{
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap:12px;
+      padding: 16px 16px 12px 16px;
+      border-bottom: 1px solid rgba(202,162,75,.18);
+      background: rgba(255,255,255,.02);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .brand img{
+      width:56px; height:56px; object-fit:cover;
+      border-radius: 14px;
+      border:1px solid rgba(202,162,75,.25);
+      background:#081d27;
+    }
+    .brand .title{
+      line-height:1.1;
+    }
+    .brand .title h1{
+      margin:0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    .brand .title p{
+      margin:4px 0 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius: 999px;
+      background: rgba(202,162,75,.1);
+      border: 1px solid rgba(202,162,75,.25);
+      color: var(--text);
+      font-size: 12.5px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 6px rgba(202,162,75,.18);
+    }
+
+    .main{
+      padding: 16px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media(min-width: 900px){
+      .main{
+        grid-template-columns: 1.2fr .8fr;
+        align-items:start;
+      }
+    }
+
+    .section-title{
+      font-weight: 800;
+      margin: 0 0 10px 0;
+      letter-spacing:.2px;
+    }
+    .muted{ color: var(--muted); }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 180px;
+      flex:1;
+    }
+    label{
+      font-size:12px;
+      color: var(--muted);
+    }
+    input, select, button, textarea{
+      outline:none;
+      border-radius: 12px;
+      border: 1px solid rgba(202,162,75,.25);
+      padding: 10px 12px;
+      background: rgba(7,22,31,.5);
+      color: var(--text);
+    }
+    textarea{ min-height: 86px; resize: vertical; }
+    button{
+      cursor:pointer;
+      font-weight: 800;
+      letter-spacing:.2px;
+      transition: transform .03s ease, background .15s ease, border-color .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      background: linear-gradient(180deg, rgba(202,162,75,.25), rgba(202,162,75,.12));
+      border-color: rgba(202,162,75,.5);
+    }
+    button.ghost{
+      background: rgba(255,255,255,.02);
+      border-color: rgba(202,162,75,.25);
+      font-weight: 800;
+      color: var(--text);
+    }
+    button.danger{
+      border-color: rgba(255,107,107,.4);
+      background: rgba(255,107,107,.08);
+      color: #ffd1d1;
+    }
+    button.ok{
+      border-color: rgba(53,208,127,.4);
+      background: rgba(53,208,127,.08);
+      color: #c9ffdf;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(202,162,75,.2);
+      background: rgba(255,255,255,.02);
+    }
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(202,162,75,.14);
+      font-size: 13px;
+    }
+    th{
+      text-align:left;
+      color: var(--muted);
+      font-weight: 800;
+      background: rgba(202,162,75,.06);
+    }
+    tr:last-child td{ border-bottom:none; }
+
+    .status-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(202,162,75,.25);
+      background: rgba(202,162,75,.08);
+      font-weight: 900;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .status-hadir{ border-color: rgba(53,208,127,.35); background: rgba(53,208,127,.08); }
+    .status-sakit{ border-color: rgba(54,163,255,.35); background: rgba(54,163,255,.08); }
+    .status-izin{ border-color: rgba(202,162,75,.35); background: rgba(202,162,75,.08); }
+    .status-alpha{ border-color: rgba(255,107,107,.45); background: rgba(255,107,107,.08); }
+
+    .navbottom{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(7,22,31,.72);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(202,162,75,.18);
+      display:flex;
+      justify-content: center;
+      gap:10px;
+      z-index: 50;
+    }
+    .navbottom .navbtn{
+      flex:1;
+      max-width: 220px;
+      padding: 12px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(202,162,75,.25);
+      background: rgba(255,255,255,.02);
+      color: var(--text);
+      font-weight: 900;
+    }
+    .navbottom .navbtn.active{
+      border-color: rgba(202,162,75,.55);
+      background: rgba(202,162,75,.12);
+    }
+    @media(min-width: 900px){
+      .navbottom{ display:none; }
+      body{ padding-bottom: 0 !important; }
+    }
+    .spacerbottom{ height: 82px; }
+
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(202,162,75,.15);
+      margin: 12px 0;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width: 520px){
+      .grid2{ grid-template-columns: 1fr; }
+      .field{ min-width: unset; }
+    }
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 14px;
+      z-index: 100;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(202,162,75,.35);
+      background: rgba(7,22,31,.8);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      display:none;
+      font-weight: 900;
+    }
+    .toast.show{ display:block; }
+    .sync{
+      font-size: 12px;
+      color: var(--muted);
+      text-align:right;
+    }
+    .tag{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(202,162,75,.22);
+      background: rgba(202,162,75,.06);
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="brand">
+          <img src="./logo-ayo-bangun.jpeg" alt="Logo Ayo Bangun">
+          <div class="title">
+            <h1>Ayo Bangun.ID Contractor</h1>
+            <p>POS Proyek Konstruksi • Absensi & Laporan WA</p>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+          <div class="pill">
+            <span class="dot" id="syncDot"></span>
+            <span>Realtime Sync</span>
+          </div>
+          <div class="sync" id="syncText">—</div>
+        </div>
+      </div>
+
+      <div class="main">
+        <!-- LEFT: main content -->
+        <div id="viewMain"></div>
+
+        <!-- RIGHT: role-based quick panel -->
+        <div id="viewSide" class="card" style="border-radius: 16px;">
+          <div style="padding:16px;">
+            <div class="section-title">Kontrol</div>
+            <div class="small" id="whoText">—</div>
+
+            <div class="divider"></div>
+
+            <div id="sideProjects" style="display:none;">
+              <div class="tag" style="width:100%; justify-content: space-between;">
+                <div style="font-weight:900;">Proyek</div>
+                <div class="muted" id="roleBadge">—</div>
+              </div>
+
+              <div style="height:10px;"></div>
+              <div class="field">
+                <label>Pilih Proyek (Owner/Admin)</label>
+                <select id="projectSelect"></select>
+              </div>
+            </div>
+
+            <div id="sideActions" style="margin-top:12px; display:none;">
+              <div class="divider"></div>
+              <div class="row">
+                <button class="ghost" id="btnSendTest" type="button" title="Buka contoh kirim WA">Cek WA</button>
+                <button class="danger" id="btnLogout" type="button">Logout</button>
+              </div>
+              <div style="height:10px;"></div>
+              <div class="small">
+                Tips: laporan WA dibuat dari rekap absensi per tanggal/per rentang.
+              </div>
+            </div>
+
+            <div id="sideAdmin" style="display:none;">
+              <div class="divider"></div>
+              <div class="section-title" style="margin-top:10px;">Admin/Owner</div>
+              <div class="small">Kelola proyek & mandor.</div>
+
+              <div style="height:12px;"></div>
+              <button class="primary" id="btnOpenManage" type="button" style="width:100%;">Kelola User & Proyek</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="spacerbottom" class="spacerbottom"></div>
+      <div class="navbottom" id="navbottom">
+        <button class="navbtn active" data-tab="attendance">Absensi</button>
+        <button class="navbtn" data-tab="reports">Laporan</button>
+        <button class="navbtn" data-tab="adminPanel" id="navAdmin">Admin</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, update, get, push, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    /***********************
+     * 1) FIREBASE CONFIG  *
+     ***********************/
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      databaseURL: "PASTE_YOUR_DATABASE_URL",
+      projectId: "PASTE_YOUR_PROJECT_ID"
+    };
+
+    // WARNING: ganti dengan setup code kamu (untuk dev bootstrapping default user)
+    const DEV_SETUP_CODE = "AYOBANGUN_SETUP_2026";
+
+    // Mapping username -> email (biar login pakai "username" bukan email).
+    // Contoh: admin -> admin@ayo.local
+    const EMAIL_SUFFIX = "@ayo.local";
+
+    // Default password untuk admin & owner (bisa kamu ubah).
+    const DEFAULT_ADMIN_USERNAME = "admin";
+    const DEFAULT_ADMIN_PASSWORD = "0000";
+    const DEFAULT_OWNER_USERNAME = "owner";
+    const DEFAULT_OWNER_PASSWORD = "owner123"; // ganti sesuai kebutuhanmu
+
+    // WA: gunakan wa.me + country format angka (tanpa +).
+    // contoh: 628123456789
+    function normalizeWaNumber(input){
+      return (input || "").toString().trim().replace(/\s+/g,"").replace(/^\+/, "");
+    }
+
+    // Status absensi
+    const ATT = {
+      hadir: "Hadir",
+      sakit: "Sakit",
+      izin: "Izin",
+      alpha: "Alpha",
+    };
+
+    /*****************
+     * 2) INIT FIREBASE
+     *****************/
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const $ = (id) => document.getElementById(id);
+
+    // toast
+    const toastEl = $("toast");
+    function toast(msg, ms=2600){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), ms);
+    }
+
+    function formatDateISO(date){
+      // date: Date
+      const y = date.getFullYear();
+      const m = String(date.getMonth()+1).padStart(2,"0");
+      const d = String(date.getDate()).padStart(2,"0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseISO(iso){
+      const [y,m,d] = iso.split("-").map(Number);
+      return new Date(y, m-1, d);
+    }
+
+    function dayNameIndo(d){
+      const map = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+      return map[d.getDay()];
+    }
+
+    function escapeHtml(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function usernameToEmail(username){
+      return `${String(username).trim()}${EMAIL_SUFFIX}`;
+    }
+
+    // App state
+    const state = {
+      me: null,          // { uid, email, username }
+      role: null,        // owner/admin/mandor
+      myProjectId: null, // for mandor: assigned projectId
+      projects: [],
+      activeProjectId: null,
+      membersInActiveProject: [] // mandor list with status
+    };
+
+    // Realtime sync indicator (best effort)
+    let syncPulse = 0;
+    function setSyncIndicator(isOnline){
+      $("syncDot").style.background = isOnline ? "var(--gold)" : "#ff6b6b";
+      $("syncText").textContent = isOnline ? "Online (Firebase)" : "Offline?";
+    }
+
+    // simple router/tabs
+    const tabs = ["attendance","reports","adminPanel"];
+    let currentTab = "attendance";
+
+    function showTab(tab){
+      currentTab = tab;
+      for(const t of tabs){
+        const el = document.querySelector(`.navbtn[data-tab="${t}"]`);
+        if(el) el.classList.toggle("active", t===tab);
+      }
+      if(tab === "attendance") renderAttendance();
+      if(tab === "reports") renderReports();
+      if(tab === "adminPanel") renderAdminPanel();
+    }
+
+    // Compute report ranges
+    function enumerateDays(startISO, endISO){
+      const start = parseISO(startISO);
+      const end = parseISO(endISO);
+      const days = [];
+      const d = new Date(start.getTime());
+      while(d <= end){
+        days.push(formatDateISO(d));
+        d.setDate(d.getDate()+1);
+      }
+      return days;
+    }
+
+    // Load role & projects & members
+    const unsubscribers = [];
+    function cleanupRealtime(){
+      while(unsubscribers.length) {
+        try{ unsubscribers.pop()(); }catch(e){}
+      }
+    }
+
+    async function bootstrapDefaultUsersIfRequested(setupCode){
+      if(setupCode !== DEV_SETUP_CODE){
+        toast("Setup code salah.");
+        return;
+      }
+      // Create admin user if not exists
+      const adminEmail = usernameToEmail(DEFAULT_ADMIN_USERNAME);
+      const ownerEmail = usernameToEmail(DEFAULT_OWNER_USERNAME);
+
+      // We'll try create; if already exists, ignore.
+      async function ensureUser(email, password){
+        try{
+          await createUserWithEmailAndPassword(auth, email, password);
+          // On success, we'll immediately write role. But auth is currently not set to that user.
+          // So we need to fetch current user? Instead, we will rely on sign-in flow later.
+          // For role assignment, we need uid, which requires knowing created user.
+          // CreateUserWithEmailAndPassword returns user credential; we'll use it.
+          return true;
+        }catch(e){
+          return false;
+        }
+      }
+
+      // Create with returned credentials to get uid
+      async function ensureUserWithUid(username, password, role){
+        const email = usernameToEmail(username);
+        try{
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          const uid = cred.user.uid;
+          await set(ref(db, `roles/${uid}`), {
+            role,
+            username,
+            displayName: username,
+            projectId: null,
+            createdAt: serverTimestamp()
+          });
+          toast(`Default ${role} dibuat: ${username}`);
+        }catch(e){
+          // user exists or other error
+          // We'll try to read roles for uid if already exists by signing in temporarily:
+          // But to keep it simple for "one file", we won't over-engineer.
+          toast(`Akun ${username} mungkin sudah ada (skip).`);
+        }
+      }
+
+      await ensureUserWithUid(DEFAULT_ADMIN_USERNAME, DEFAULT_ADMIN_PASSWORD, "admin");
+      await ensureUserWithUid(DEFAULT_OWNER_USERNAME, DEFAULT_OWNER_PASSWORD, "owner");
+
+      // Also create an example project if none exists (optional)
+      const projectsSnap = await get(ref(db, "projects"));
+      if(!projectsSnap.exists()){
+        const pid = "project_demo";
+        await set(ref(db, `projects/${pid}/meta`), {
+          name: "Proyek Demo",
+          description: "Contoh proyek",
+          location: "—",
+          waNumber: "6281234567890",
+          createdAt: serverTimestamp()
+        });
+        toast("Project demo dibuat.");
+      }
+    }
+
+    function renderLogin(){
+      $("viewMain").innerHTML = `
+        <div class="section-title" style="margin-bottom:6px;">Login</div>
+        <div class="small" style="margin-bottom:14px;">
+          Gunakan <b>username</b> (bukan email). Internal login menggunakan <b>Firebase Auth</b>.
+          <br/>Default dev: admin/0000 dan owner/${escapeHtml(DEFAULT_OWNER_PASSWORD)}.
+        </div>
+
+        <div class="card" style="padding:14px; border-radius: 16px;">
+          <div class="grid2">
+            <div class="field">
+              <label>Username</label>
+              <input id="inUsername" placeholder="contoh: admin / owner / mandor1" autocomplete="username" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input id="inPassword" type="password" placeholder="password" autocomplete="current-password" />
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+          <div class="row">
+            <button class="primary" id="btnLogin" type="button" style="flex:1; min-width:200px;">Login</button>
+            <button class="ghost" id="btnSetupDefault" type="button" title="DEV only" style="min-width:220px;">Setup Default User (DEV)</button>
+          </div>
+
+          <div style="height:10px;"></div>
+          <div class="small">
+            Setup Default User butuh <b>DEV_SETUP_CODE</b>. Ini hanya untuk memudahkan deploy.
+          </div>
+
+          <div style="height:12px;"></div>
+          <div id="setupBox" class="card" style="padding:12px; border-radius: 14px; background: rgba(255,255,255,.015); border: 1px dashed rgba(202,162,75,.35); display:none;">
+            <div class="field" style="min-width: unset;">
+              <label>Masukkan setup code</label>
+              <input id="inSetupCode" placeholder="DEV_SETUP_CODE" />
+            </div>
+            <div style="height:10px;"></div>
+            <button class="ok" id="btnRunSetup" type="button" style="width:100%;">Buat admin & owner default</button>
+          </div>
+        </div>
+      `;
+
+      $("btnLogin").onclick = async () => {
+        const username = $("inUsername").value.trim();
+        const password = $("inPassword").value;
+        if(!username || !password) return toast("Isi username & password.");
+
+        const email = usernameToEmail(username);
+        try{
+          await signInWithEmailAndPassword(auth, email, password);
+          toast("Login berhasil.");
+          // Auth state handler will render app
+        }catch(e){
+          console.error(e);
+          toast("Login gagal. cek username/password.");
+        }
+      };
+
+      $("btnSetupDefault").onclick = () => {
+        $("setupBox").style.display = $("setupBox").style.display === "none" ? "block" : "none";
+      };
+
+      $("btnRunSetup").onclick = async () => {
+        const code = $("inSetupCode").value.trim();
+        await bootstrapDefaultUsersIfRequested(code);
+      };
+    }
+
+    function ensureSideUI(show){
+      $("sideActions").style.display = show ? "block" : "none";
+      $("sideProjects").style.display = show ? "block" : "none";
+      $("sideAdmin").style.display = show ? "block" : "none";
+      $("navAdmin").style.display = show ? "block" : "none";
+    }
+
+    function renderSide(){
+      $("whoText").innerHTML = `
+        <div style="font-weight:900; margin-bottom:8px;">
+          ${escapeHtml(state.me?.username || "-")} • ${escapeHtml(state.role || "-")}
+        </div>
+        <div class="small">Firebase UID: <span style="color:var(--gold); font-weight:900;">${escapeHtml(state.me?.uid || "-")}</span></div>
+      `;
+
+      // role badge
+      $("roleBadge").textContent = state.role ? state.role.toUpperCase() : "-";
+
+      // show/hide admin panel
+      const isAdmin = state.role === "admin" || state.role === "owner";
+      $("navAdmin").style.display = isAdmin ? "block" : "none";
+      $("sideAdmin").style.display = isAdmin ? "block" : "none";
+      $("sideActions").style.display = "block";
+    }
+
+    function statusBadge(status){
+      const cls = status === ATT.hadir ? "status-hadir"
+                : status === ATT.sakit ? "status-sakit"
+                : status === ATT.izin ? "status-izin"
+                : "status-alpha";
+      return `<span class="status-badge ${cls}">${escapeHtml(status || "-")}</span>`;
+    }
+
+    function renderAttendance(){
+      const pid = state.activeProjectId;
+      const members = state.membersInActiveProject || [];
+
+      if(!pid){
+        $("viewMain").innerHTML = `<div class="section-title">Absensi</div><div class="small">Pilih proyek dulu.</div>`;
+        return;
+      }
+
+      $("viewMain").innerHTML = `
+        <div class="section-title">Absensi</div>
+
+        <div class="card" style="padding:14px; border-radius: 16px;">
+          <div class="row" style="justify-content: space-between;">
+            <div class="row" style="flex:1;">
+              <div class="field" style="max-width:220px; min-width:220px;">
+                <label>Tanggal</label>
+                <input id="attendanceDate" type="date" />
+              </div>
+              <div style="align-self:flex-end;">
+                <button class="ghost" id="btnLoadAttendance" type="button">Muat</button>
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <div class="small">Edit: semua user boleh ubah absensi (sesuai request).</div>
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 42%;">Tenaga Kerja</th>
+                  <th>Status</th>
+                  <th style="width: 24%;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="attBody"></tbody>
+            </table>
+          </div>
+
+          <div style="height:10px;"></div>
+          <div class="small" id="attMeta">—</div>
+        </div>
+      `;
+
+      const dateInput = $("attendanceDate");
+      const today = new Date();
+      dateInput.value = formatDateISO(today);
+
+      const attBody = $("attBody");
+      const attMeta = $("attMeta");
+
+      function renderRows(attDataByUid){
+        attBody.innerHTML = "";
+        for(const m of members){
+          const uid = m.uid;
+          const status = attDataByUid?.[uid]?.status || "";
+          const note = attDataByUid?.[uid]?.note || "";
+          const updatedAt = attDataByUid?.[uid]?.updatedAt || "";
+
+          attBody.innerHTML += `
+            <tr>
+              <td>
+                <div style="font-weight:900;">${escapeHtml(m.username)}</div>
+                <div class="small">${escapeHtml(m.displayName || "")}</div>
+              </td>
+              <td>
+                <select data-uid="${escapeHtml(uid)}" class="attSelect">
+                  ${Object.values(ATT).map(s=>{
+                    const sel = status===s ? "selected" : "";
+                    return `<option value="${escapeHtml(s)}" ${sel}>${escapeHtml(s)}</option>`;
+                  }).join("")}
+                </select>
+                <div style="margin-top:8px;" class="small">
+                  ${updatedAt ? `Update: ${escapeHtml(updatedAt)}` : ""}
+                </div>
+              </td>
+              <td>
+                <button class="ok" data-save="${escapeHtml(uid)}" type="button" style="width:100%;">Simpan</button>
+                <div style="height:8px;"></div>
+                <button class="ghost" data-note="${escapeHtml(uid)}" type="button" style="width:100%;">Catatan</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        // attach events
+        for(const m of members){
+          const uid = m.uid;
+
+          const saveBtn = document.querySelector(`button[data-save="${CSS.escape(uid)}"]`);
+          if(saveBtn){
+            saveBtn.onclick = async () => {
+              const selectEl = document.querySelector(`select.attSelect[data-uid="${CSS.escape(uid)}"]`);
+              const status = selectEl.value;
+              const noteInputVal = noteDraftByUid[uid] ?? "";
+
+              await update(ref(db, `attendance/${pid}/${state.activeDateISO}/${uid}`), {
+                status,
+                note: noteInputVal || "",
+                updatedBy: state.me.uid,
+                updatedAt: new Date().toISOString()
+              });
+              toast("Absensi tersimpan.");
+              // re-render to reflect note
+              const newData = await getAttendanceForDate(state.activeDateISO, pid);
+              renderRows(newData);
+            };
+          }
+
+          const noteBtn = document.querySelector(`button[data-note="${CSS.escape(uid)}"]`);
+          if(noteBtn){
+            noteBtn.onclick = async () => {
+              const existing = noteDraftByUid[uid] ?? attDataDraft?.[uid]?.note ?? "";
+              const val = prompt("Catatan absensi (opsional):", existing || "");
+              if(val === null) return;
+              noteDraftByUid[uid] = val;
+              toast("Catatan tersimpan sementara (belum masuk DB). Klik Simpan.");
+            };
+          }
+        }
+      }
+
+      // Draft note in-memory
+      const noteDraftByUid = {};
+      let attDataDraft = null;
+
+      async function getAttendanceForDate(dateISO, projectId){
+        const snap = await get(ref(db, `attendance/${projectId}/${dateISO}`));
+        if(!snap.exists()){
+          return {};
+        }
+        return snap.val() || {};
+      }
+
+      state.activeDateISO = dateInput.value;
+
+      $("btnLoadAttendance").onclick = async () => {
+        state.activeDateISO = dateInput.value;
+        attMeta.textContent = "Memuat data...";
+        const data = await getAttendanceForDate(state.activeDateISO, pid);
+        attDataDraft = data;
+        renderRows(data);
+        attMeta.textContent = `Tanggal: ${state.activeDateISO} (${dayNameIndo(parseISO(state.activeDateISO))})`;
+      };
+
+      // initial load
+      $("btnLoadAttendance").click();
+    }
+
+    function renderReports(){
+      const pid = state.activeProjectId;
+      if(!pid){
+        $("viewMain").innerHTML = `<div class="section-title">Laporan</div><div class="small">Pilih proyek dulu.</div>`;
+        return;
+      }
+
+      const projectMeta = (state.projects || []).find(p=>p.id===pid)?.meta || {};
+      $("viewMain").innerHTML = `
+        <div class="section-title">Laporan ke WhatsApp</div>
+        <div class="card" style="padding:14px; border-radius: 16px;">
+          <div class="small">Pilih jenis laporan, lalu klik tombol <b>Kirim ke WA</b>.</div>
+
+          <div style="height:12px;"></div>
+
+          <div class="grid2">
+            <div class="card" style="padding:12px; border-radius: 14px; background: rgba(255,255,255,.015); border: 1px solid rgba(202,162,75,.18);">
+              <div style="font-weight:900; margin-bottom:10px;">Harian</div>
+              <div class="field">
+                <label>Tanggal</label>
+                <input id="repDailyDate" type="date" />
+              </div>
+              <div style="height:10px;"></div>
+              <button class="primary" id="btnSendDaily" type="button" style="width:100%;">Kirim Laporan Harian</button>
+              <div class="small" style="margin-top:8px;">Rekap absensi per tanggal.</div>
+            </div>
+
+            <div class="card" style="padding:12px; border-radius: 14px; background: rgba(255,255,255,.015); border: 1px solid rgba(202,162,75,.18);">
+              <div style="font-weight:900; margin-bottom:10px;">Mingguan</div>
+              <div class="field">
+                <label>Tanggal mulai (7 hari)</label>
+                <input id="repWeeklyStart" type="date" />
+              </div>
+              <div class="small" style="margin-top:6px;">Range: start s/d start+6.</div>
+              <div style="height:10px;"></div>
+              <button class="primary" id="btnSendWeekly" type="button" style="width:100%;">Kirim Laporan Mingguan</button>
+            </div>
+
+            <div class="card" style="padding:12px; border-radius: 14px; background: rgba(255,255,255,.015); border: 1px solid rgba(202,162,75,.18); grid-column: 1 / -1;">
+              <div style="font-weight:900; margin-bottom:10px;">Bulanan</div>
+              <div class="grid2">
+                <div class="field">
+                  <label>Pilih bulan</label>
+                  <input id="repMonthly" type="month" />
+                </div>
+                <div class="field">
+                  <label>Ringkas</label>
+                  <textarea id="repPreview" readonly style="min-height:84px;"></textarea>
+                </div>
+              </div>
+              <div style="height:10px;"></div>
+              <button class="primary" id="btnSendMonthly" type="button" style="width:100%;">Kirim Laporan Bulanan</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:14px;"></div>
+        <div class="small">
+          Proyek: <b>${escapeHtml(projectMeta.name || pid)}</b> • WA: <b>${escapeHtml(projectMeta.waNumber || "-")}</b>
+        </div>
+      `;
+
+      // defaults
+      const today = new Date();
+      $("repDailyDate").value = formatDateISO(today);
+      $("repWeeklyStart").value = formatDateISO(today);
+
+      const monthStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}`;
+      $("repMonthly").value = monthStr;
+
+      function buildMessageForRange({ title, dateList, projectMeta, attendanceMapByUidByDay }){
+        // attendanceMapByUidByDay: { [uid]: { [dateISO]: status } }
+        const users = Object.keys(attendanceMapByUidByDay || {});
+        const totals = { [ATT.hadir]:0, [ATT.sakit]:0, [ATT.izin]:0, [ATT.alpha]:0 };
+
+        for(const uid of users){
+          for(const dateISO of dateList){
+            const st = attendanceMapByUidByDay?.[uid]?.[dateISO];
+            if(st && totals[st] !== undefined){
+              totals[st]++;
+            }
+          }
+        }
+
+        // Build per user line
+        // We'll show last status in range for simplicity (atau bisa rekap per hari).
+        let perUser = "";
+        for(const uid of users){
+          // last day with status
+          let lastStatus = null;
+          for(let i=dateList.length-1; i>=0; i--){
+            const di = dateList[i];
+            const st = attendanceMapByUidByDay?.[uid]?.[di];
+            if(st){ lastStatus = st; break; }
+          }
+          const uname = (state.rolesCache?.[uid]?.username) || uid.slice(0,8);
+          const stText = lastStatus ? lastStatus : "-";
+          perUser += `• ${uname}: ${stText}\n`;
+        }
+
+        const waText =
+`${title}
+Proyek: ${projectMeta.name || pid}
+Periode: ${dateList[0]} s/d ${dateList[dateList.length-1]}
+
+Rekap Total (jumlah entri status):
+- Hadir: ${totals[ATT.hadir]}
+- Sakit: ${totals[ATT.sakit]}
+- Izin: ${totals[ATT.izin]}
+- Alpha: ${totals[ATT.alpha]}
+
+Status per mandor (status terakhir di periode):
+${perUser}`.trim();
+
+        return waText;
+      }
+
+      async function fetchAttendanceForRange(projectId, dateList){
+        // We'll fetch each day attendance node
+        // For simplicity with moderate data, sequential fetch.
+        const attendanceMapByUidByDay = {}; // [uid][dateISO]=status
+        for(const dateISO of dateList){
+          const snap = await get(ref(db, `attendance/${projectId}/${dateISO}`));
+          if(!snap.exists()) continue;
+          const dayObj = snap.val() || {};
+          for(const uid of Object.keys(dayObj)){
+            const st = dayObj[uid]?.status;
+            if(!attendanceMapByUidByDay[uid]) attendanceMapByUidByDay[uid] = {};
+            if(st) attendanceMapByUidByDay[uid][dateISO] = st;
+          }
+        }
+        return attendanceMapByUidByDay;
+      }
+
+      async function ensureRolesCache(){
+        if(state.rolesCache) return state.rolesCache;
+        const snap = await get(ref(db, `roles`));
+        state.rolesCache = snap.exists() ? snap.val() : {};
+        return state.rolesCache;
+      }
+
+      function openWA(number, text){
+        const n = normalizeWaNumber(number);
+        if(!n) return toast("WA number kosong di proyek.");
+        const encoded = encodeURIComponent(text);
+        const url = `https://wa.me/${n}?text=${encoded}`;
+        window.open(url, "_blank");
+      }
+
+      $("btnSendDaily").onclick = async () => {
+        const dateISO = $("repDailyDate").value;
+        const dateList = [dateISO];
+        await ensureRolesCache();
+
+        const attendanceMap = await fetchAttendanceForRange(pid, dateList);
+        const text = buildMessageForRange({
+          title: `Laporan Absensi Harian`,
+          dateList,
+          projectMeta,
+          attendanceMapByUidByDay: attendanceMap
+        });
+        openWA(projectMeta.waNumber, text);
+      };
+
+      $("btnSendWeekly").onclick = async () => {
+        const startISO = $("repWeeklyStart").value;
+        const start = parseISO(startISO);
+        const end = new Date(start.getTime());
+        end.setDate(end.getDate()+6);
+        const endISO = formatDateISO(end);
+
+        const dateList = enumerateDays(startISO, endISO);
+        await ensureRolesCache();
+
+        const attendanceMap = await fetchAttendanceForRange(pid, dateList);
+        const text = buildMessageForRange({
+          title: `Laporan Absensi Mingguan`,
+          dateList,
+          projectMeta,
+          attendanceMapByUidByDay: attendanceMap
+        });
+        openWA(projectMeta.waNumber, text);
+      };
+
+      async function updateMonthlyPreview(){
+        const m = $("repMonthly").value; // YYYY-MM
+        if(!m) return;
+
+        const [y, mm] = m.split("-").map(Number);
+        const start = new Date(y, mm-1, 1);
+        const end = new Date(y, mm, 0); // last day of month
+        const startISO = formatDateISO(start);
+        const endISO = formatDateISO(end);
+
+        const dateList = enumerateDays(startISO, endISO);
+        await ensureRolesCache();
+
+        // Preview: just compute totals for quick glance
+        const attendanceMap = await fetchAttendanceForRange(pid, dateList);
+
+        const totals = { [ATT.hadir]:0, [ATT.sakit]:0, [ATT.izin]:0, [ATT.alpha]:0 };
+        const users = Object.keys(attendanceMap || {});
+        for(const uid of users){
+          for(const di of dateList){
+            const st = attendanceMap?.[uid]?.[di];
+            if(st && totals[st] !== undefined) totals[st]++;
+          }
+        }
+
+        $("repPreview").value =
+`Periode: ${startISO} s/d ${endISO}
+Hadir: ${totals[ATT.hadir]}
+Sakit: ${totals[ATT.sakit]}
+Izin: ${totals[ATT.izin]}
+Alpha: ${totals[ATT.alpha]}`;
+      }
+
+      $("repMonthly").addEventListener("change", updateMonthlyPreview);
+      setTimeout(updateMonthlyPreview, 200);
+
+      $("btnSendMonthly").onclick = async () => {
+        const m = $("repMonthly").value; // YYYY-MM
+        const [y, mm] = m.split("-").map(Number);
+        const start = new Date(y, mm-1, 1);
+        const end = new Date(y, mm, 0);
+        const startISO = formatDateISO(start);
+        const endISO = formatDateISO(end);
+        const dateList = enumerateDays(startISO, endISO);
+
+        await ensureRolesCache();
+        const attendanceMap = await fetchAttendanceForRange(pid, dateList);
+
+        const text = buildMessageForRange({
+          title: `Laporan Absensi Bulanan`,
+          dateList,
+          projectMeta,
+          attendanceMapByUidByDay: attendanceMap
+        });
+
+        openWA(projectMeta.waNumber, text);
+      };
+    }
+
+    function renderAdminPanel(){
+      const isAdmin = state.role === "owner" || state.role === "admin";
+      if(!isAdmin){
+        $("viewMain").innerHTML = `<div class="section-title">Admin</div><div class="small">Akses ditolak.</div>`;
+        return;
+      }
+
+      const pid = state.activeProjectId;
+
+      $("viewMain").innerHTML = `
+        <div class="section-title">Admin Panel</div>
+        <div class="card" style="padding:14px; border-radius: 16px;">
+          <div class="row" style="justify-content: space-between;">
+            <div class="small">
+              Kelola proyek (owner/admin) & mandor (admin/owner).
+            </div>
+            <div class="small">
+              Proyek aktif: <b>${escapeHtml(pid || "-")}</b>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title" style="margin-top:6px;">1) Kelola Proyek</div>
+          <div class="grid2">
+            <div class="field">
+              <label>Nama Proyek</label>
+              <input id="projName" placeholder="nama proyek" />
+            </div>
+            <div class="field">
+              <label>Nomor WhatsApp (contoh: 6281xxxx)</label>
+              <input id="projWa" placeholder="6281xxxx" />
+            </div>
+          </div>
+
+          <div style="height:10px;"></div>
+          <div class="field">
+            <label>Keterangan</label>
+            <input id="projDesc" placeholder="keterangan singkat" />
+          </div>
+
+          <div style="height:12px;"></div>
+          <div class="row">
+            <button class="primary" id="btnSaveProject" type="button" style="flex:1;">Simpan Perubahan Proyek</button>
+            <button class="ghost" id="btnCreateProject" type="button" style="flex:1; min-width:210px;">Buat Proyek Baru</button>
+          </div>
+
+          <div style="height:14px;"></div>
+          <div class="small" id="projInfo">—</div>
+
+          <div class="divider"></div>
+
+          <div class="section-title" style="margin-top:6px;">2) Kelola Mandor</div>
+          <div class="small">Admin/owner bisa menambah mandor 1 sampai beberapa.</div>
+
+          <div style="height:12px;"></div>
+          <div class="grid2">
+            <div class="field">
+              <label>Username Mandor</label>
+              <input id="mandorUsername" placeholder="contoh: mandor1" />
+            </div>
+            <div class="field">
+              <label>Password Mandor</label>
+              <input id="mandorPassword" type="password" placeholder="password" />
+            </div>
+          </div>
+
+          <div style="height:10px;"></div>
+          <div class="field">
+            <label>Nama tampil (opsional)</label>
+            <input id="mandorDisplayName" placeholder="contoh: Mandor Utama" />
+          </div>
+
+          <div style="height:12px;"></div>
+          <div class="row">
+            <button class="primary" id="btnCreateMandor" type="button" style="flex:1;">Tambah Mandor</button>
+            <button class="ghost" id="btnRefreshMembers" type="button" style="flex:1; min-width:210px;">Refresh List</button>
+          </div>
+
+          <div style="height:14px;"></div>
+
+          <div style="overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40%;">Mandor</th>
+                  <th>Proyek</th>
+                  <th style="width: 24%;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="membersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      const projSnap = (state.projects || []).find(p=>p.id===pid);
+      const projMeta = projSnap?.meta || {};
+      $("projName").value = projMeta.name || "";
+      $("projWa").value = projMeta.waNumber || "";
+      $("projDesc").value = projMeta.description || "";
+
+      function loadProjectMetaToInputs(){
+        const p = (state.projects || []).find(x=>x.id===state.activeProjectId);
+        const m = p?.meta || {};
+        $("projName").value = m.name || "";
+        $("projWa").value = m.waNumber || "";
+        $("projDesc").value = m.description || "";
+      }
+
+      $("btnSaveProject").onclick = async () => {
+        if(!state.activeProjectId) return toast("Pilih proyek dulu.");
+
+        const name = $("projName").value.trim();
+        const wa = $("projWa").value.trim();
+        const description = $("projDesc").value.trim();
+
+        if(!name) return toast("Nama proyek wajib.");
+
+        await update(ref(db, `projects/${state.activeProjectId}/meta`), {
+          name,
+          waNumber: normalizeWaNumber(wa),
+          description,
+          updatedAt: new Date().toISOString()
+        });
+
+        toast("Proyek tersimpan.");
+      };
+
+      $("btnCreateProject").onclick = async () => {
+        const newName = prompt("Nama proyek baru:");
+        if(!newName) return;
+        const pid = `project_${Math.random().toString(16).slice(2,8)}_${Date.now().toString().slice(-4)}`;
+
+        await set(ref(db, `projects/${pid}/meta`), {
+          name: newName.trim(),
+          description: "",
+          location: "",
+          waNumber: "",
+          createdAt: serverTimestamp()
+        });
+
+        toast("Proyek dibuat. Pilih dari dropdown.");
+        // dropdown will update via realtime listener
+      };
+
+      $("btnRefreshMembers").onclick = () => loadMembersTable();
+
+      $("btnCreateMandor").onclick = async () => {
+        const u = $("mandorUsername").value.trim();
+        const p = $("mandorPassword").value;
+        const dn = $("mandorDisplayName").value.trim();
+
+        if(!u || !p) return toast("Isi username & password mandor.");
+        if(!state.activeProjectId) return toast("Pilih proyek aktif.");
+
+        // Create user in Firebase Auth
+        const email = usernameToEmail(u);
+        try{
+          const cred = await createUserWithEmailAndPassword(auth, email, p);
+          const uid = cred.user.uid;
+
+          // Save role + project assignment
+          await set(ref(db, `roles/${uid}`), {
+            role: "mandor",
+            username: u,
+            displayName: dn || u,
+            projectId: state.activeProjectId,
+            createdAt: serverTimestamp()
+          });
+
+          // Update local and refresh
+          toast("Mandor ditambahkan.");
+          await refreshMembersForActiveProject();
+          loadMembersTable();
+
+          $("mandorUsername").value = "";
+          $("mandorPassword").value = "";
+          $("mandorDisplayName").value = "";
+        }catch(e){
+          console.error(e);
+          toast("Gagal buat mandor. Pastikan user belum ada atau coba password lain.");
+        }
+      };
+
+      function loadMembersTable(){
+        const membersBody = $("membersBody");
+        const members = state.membersInActiveProject || [];
+        membersBody.innerHTML = "";
+
+        for(const m of members){
+          membersBody.innerHTML += `
+            <tr>
+              <td>
+                <div style="font-weight:900;">${escapeHtml(m.username)}</div>
+                <div class="small">${escapeHtml(m.displayName || "")}</div>
+              </td>
+              <td>${escapeHtml(m.projectId || "-")}</td>
+              <td>
+                <button class="danger" type="button" style="width:100%;" data-del="${escapeHtml(m.uid)}">Hapus</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        for(const m of members){
+          const btn = document.querySelector(`button[data-del="${CSS.escape(m.uid)}"]`);
+          if(!btn) continue;
+          btn.onclick = async () => {
+            const ok = confirm(`Hapus mandor ${m.username}? (Data absensi juga ikut dihapus untuk proyek aktif)`);
+            if(!ok) return;
+
+            // IMPORTANT: Menghapus Firebase Auth user membutuhkan admin SDK (tidak tersedia).
+            // Untuk demo, kita hapus role di RTDB saja + hapus absensi node proyek (agar list berkurang).
+            await remove(ref(db, `roles/${m.uid}`));
+
+            // remove attendance nodes for all days for this project (best effort)
+            // We'll delete only the node for attendance for all dates under the project by leaving it as-is? We'll do best effort by removing current date only.
+            // Better: Keep it simple: do not delete attendance history.
+            toast("Role mandor dihapus dari proyek (histori absensi dibiarkan).");
+            await refreshMembersForActiveProject();
+            loadMembersTable();
+          };
+        }
+      }
+
+      // initial render
+      loadMembersTable();
+
+      // keep inputs synced on project switch
+      $("projInfo").textContent = "Perubahan proyek akan tersimpan ke Firebase.";
+    }
+
+    async function refreshMembersForActiveProject(){
+      // Build members list from roles where role=mandor & projectId=activeProjectId
+      const pid = state.activeProjectId;
+      if(!pid) return;
+
+      const snap = await get(ref(db, `roles`));
+      const rolesObj = snap.exists() ? snap.val() : {};
+      const members = [];
+
+      for(const [uid, r] of Object.entries(rolesObj)){
+        if(r?.role === "mandor" && r?.projectId === pid){
+          members.push({ uid, username: r.username, displayName: r.displayName || r.username, projectId: r.projectId });
+        }
+      }
+
+      // sort by username
+      members.sort((a,b)=> (a.username||"").localeCompare(b.username||""));
+      state.membersInActiveProject = members;
+    }
+
+    function renderAppAfterAuth(){
+      // determine role + projects via realtime
+      cleanupRealtime();
+
+      // realtime roles
+      const meUid = state.me.uid;
+      const roleRef = ref(db, `roles/${meUid}`);
+
+      onValue(roleRef, (snap) => {
+        const r = snap.val();
+        state.role = r?.role || null;
+        state.myProjectId = r?.projectId || null;
+        renderAfterRoleLoaded();
+      }, { onlyOnce: false });
+
+      function renderAfterRoleLoaded(){
+        if(!state.role){
+          toast("Role belum terdaftar. Hubungi admin/owner.");
+          renderLogin();
+          return;
+        }
+
+        const isOwnerAdmin = state.role === "owner" || state.role === "admin";
+        const isMandor = state.role === "mandor";
+
+        // Side UI / project select
+        ensureSideUI(isOwnerAdmin);
+        $("navbottom").style.display = "flex";
+
+        renderSide();
+        $("btnOpenManage").style.display = isOwnerAdmin ? "block" : "none";
+
+        // Setup projects realtime listener:
+        // - Owner/Admin: can view all projects
+        // - Mandor: project select hidden; activeProjectId fixed by myProjectId
+        if(isMandor){
+          state.activeProjectId = state.myProjectId;
+          setupRealtimeProjectsAndMembers(true);
+          showTab("attendance");
+          return;
+        }else{
+          setupRealtimeProjectsAndMembers(false);
+          showTab("attendance");
+        }
+      }
+    }
+
+    function setupRealtimeProjectsAndMembers(forMandor){
+      // projects listener
+      const projectsRef = ref(db, "projects");
+      let first = true;
+
+      const off = onValue(projectsRef, async (snap) => {
+        const obj = snap.val() || {};
+        state.projects = [];
+        for(const [id, p] of Object.entries(obj)){
+          state.projects.push({ id, meta: p?.meta || {} });
+        }
+        state.projects.sort((a,b)=> (a.meta?.name||"").localeCompare(b.meta?.name||""));
+
+        // set active project
+        if(forMandor){
+          // fixed
+        }else{
+          const current = state.activeProjectId;
+          if(!current && state.projects.length) state.activeProjectId = state.projects[0].id;
+        }
+
+        // render project dropdown
+        const ps = $("projectSelect");
+        if(ps){
+          ps.innerHTML = "";
+          for(const p of state.projects){
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.meta?.name ? `${p.meta.name} (${p.id})` : p.id;
+            if(p.id === state.activeProjectId) opt.selected = true;
+            ps.appendChild(opt);
+          }
+
+          // bind change once
+          ps.onchange = async () => {
+            state.activeProjectId = ps.value;
+            // refresh members for new project and rerender tabs
+            await refreshMembersForActiveProject();
+            showTab(currentTab);
+          };
+        }
+
+        // members refresh
+        await refreshMembersForActiveProject();
+        if(first){
+          first = false;
+          showTab(currentTab);
+        }
+      });
+
+      unsubscribers.push(off);
+    }
+
+    // Bootstrapping service worker (inline)
+    async function registerSW(){
+      try{
+        if(!("serviceWorker" in navigator)) return;
+        const swCode = `
+          const CACHE_NAME = "ayo-bangun-pos-cache-v1";
+          const urlsToCache = [
+            self.location.origin + "/",
+            self.location.origin + "/index.html",
+            self.location.origin + "/logo-ayo-bangun.jpeg"
+          ];
+
+          self.addEventListener("install", (event) => {
+            event.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)).catch(()=>{})
+            );
+          });
+
+          self.addEventListener("activate", (event) => {
+            event.waitUntil(
+              caches.keys().then((keys) => Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+              ))
+            );
+          });
+
+          self.addEventListener("fetch", (event) => {
+            const req = event.request;
+            if(req.method !== "GET") return;
+            event.respondWith(
+              caches.match(req).then((cached) => {
+                if(cached) return cached;
+                return fetch(req).then((res) => {
+                  const clone = res.clone();
+                  caches.open(CACHE_NAME).then((cache)=>cache.put(req, clone)).catch(()=>{});
+                  return res;
+                }).catch(()=>cached);
+              })
+            );
+          });
+        `;
+        const blob = new Blob([swCode], { type: "text/javascript" });
+        const swUrl = URL.createObjectURL(blob);
+        await navigator.serviceWorker.register(swUrl, { scope: "./" });
+      }catch(e){
+        console.warn("SW register failed", e);
+      }
+    }
+
+    // Main init
+    $("btnLogout").onclick = async () => {
+      await signOut(auth);
+      toast("Logout.");
+    };
+
+    $("btnSendTest").onclick = async () => {
+      const pid = state.activeProjectId;
+      if(!pid) return toast("Pilih proyek dulu.");
+      const p = (state.projects || []).find(x=>x.id===pid);
+      const wa = p?.meta?.waNumber;
+      const txt = `Halo Ayo Bangun! Ini pesan uji dari aplikasi POS.`;
+      openWA(wa, txt);
+    };
+
+    function openWA(number, text){
+      const n = normalizeWaNumber(number);
+      if(!n) return toast("WA number kosong di proyek.");
+      const url = `https://wa.me/${n}?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    }
+
+    // Nav bottom
+    document.querySelectorAll(".navbtn").forEach(btn=>{
+      btn.addEventListener("click", () => {
+        const t = btn.getAttribute("data-tab");
+        if(!t) return;
+        showTab(t);
+      });
+    });
+
+    // open admin manage (button)
+    $("btnOpenManage").onclick = () => showTab("adminPanel");
+
+    // Auth state
+    onAuthStateChanged(auth, async (user) => {
+      if(user){
+        state.me = {
+          uid: user.uid,
+          email: user.email,
+          username: (user.email || "").replace(EMAIL_SUFFIX, "")
+        };
+        // Realtime sync indicator
+        setSyncIndicator(true);
+        toast("Terautentikasi.");
+
+        // load app
+        $("viewSide").style.display = "block";
+        renderAppAfterAuth();
+
+        // initial roles read fallback
+        renderSide();
+
+      }else{
+        // not logged in
+        cleanupRealtime();
+        state.me = null;
+        state.role = null;
+        state.projects = [];
+        state.activeProjectId = null;
+        state.membersInActiveProject = [];
+        state.rolesCache = null;
+
+        $("navbottom").style.display = "none";
+        $("viewSide").style.display = "none";
+        renderLogin();
+      }
+    });
+
+    // set admin button handler after DOM
+    $("btnOpenManage") && ($("btnOpenManage").onclick = ()=> showTab("adminPanel"));
+
+    // Render initial
+    renderLogin();
+
+    // Register PWA SW
+    await registerSW();
+
+    // Sync pulse (cosmetic)
+    setSyncIndicator(true);
+    setInterval(()=>{
+      syncPulse++;
+      $("syncText").textContent = `Online (Firebase) • pulse ${syncPulse}`;
+    }, 5000);
+
+  </script>
+</body>
+</html>
