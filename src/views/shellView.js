@@ -27,7 +27,6 @@ export function renderShell(root, { me, role, projectOptions, activeProjectId },
             <span>${escapeHtml(me?.username || "-")} • ${escapeHtml(role || "-")}</span>
           </div>
         </div>
-
         <div class="main">
           <div id="mainView"></div>
           <div class="card" style="border-radius:16px;">
@@ -48,7 +47,6 @@ export function renderShell(root, { me, role, projectOptions, activeProjectId },
             </div>
           </div>
         </div>
-
         <div id="spacerbottom" class="spacerbottom"></div>
         <div class="navbottom" id="navbottom">
           ${navItems.map(x => `<button class="navbtn" data-tab="${x.id}">${x.label}</button>`).join("")}

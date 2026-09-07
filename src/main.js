@@ -11,7 +11,6 @@ import { renderAdminView } from "./views/adminView.js";
 
 const $ = (id) => document.getElementById(id);
 const toast = toastFactory();
-
 const state = { me:null, role:null, projects:[], activeProjectId:null, members:[], activeTab:"attendance", listeners:[] };
 
 function clearListeners(){ while(state.listeners.length){ try{ state.listeners.pop()(); }catch(e){} } }
@@ -21,23 +20,6 @@ async function loadMeRole(){
   const r = roleSnap.exists() ? roleSnap.val() : null;
   state.role = r?.role || null;
   state.activeProjectId = state.role === "mandor" ? (r?.projectId || null) : (state.activeProjectId || null);
-}
-
-function renderApp(){
-  renderShell($("root"), {
-    me: state.me,
-    role: state.role,
-    projectOptions: state.projects,
-    activeProjectId: state.activeProjectId
-  }, {
-    onNavigate: (action, payload) => {
-      if(action === "setProject"){ state.activeProjectId = payload; renderApp(); return; }
-      state.activeTab = action;
-      renderMain();
-    },
-    onLogout: async () => { await signOut(auth); }
-  });
-  renderMain();
 }
 
 function renderMain(){
@@ -54,6 +36,27 @@ function renderMain(){
   }
 }
 
+function renderApp(){
+  renderShell($("root"), {
+    me: state.me,
+    role: state.role,
+    projectOptions: state.projects,
+    activeProjectId: state.activeProjectId
+  }, {
+    onNavigate: (action, payload) => {
+      if(action === "setProject"){
+        state.activeProjectId = payload;
+        renderApp();
+        return;
+      }
+      state.activeTab = action;
+      renderMain();
+    },
+    onLogout: async () => { await signOut(auth); }
+  });
+  renderMain();
+}
+
 function watchProjects(){
   const unsub = onValue(ref(db, "projects"), (snap)=>{
     const obj = snap.val() || {};
@@ -68,7 +71,9 @@ function watchProjects(){
 function watchMembers(){
   const unsub = onValue(ref(db, "roles"), (snap)=>{
     const obj = snap.val() || {};
-    state.members = Object.entries(obj).filter(([uid,r])=>r?.role==="mandor" && r?.projectId===state.activeProjectId).map(([uid,r])=>({uid, username:r.username, displayName:r.displayName || r.username}));
+    state.members = Object.entries(obj)
+      .filter(([uid,r])=>r?.role==="mandor" && r?.projectId===state.activeProjectId)
+      .map(([uid,r])=>({uid, username:r.username, displayName:r.displayName || r.username}));
     renderMain();
   });
   state.listeners.push(unsub);
